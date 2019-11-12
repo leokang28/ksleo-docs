@@ -4,12 +4,15 @@
 
 ## setTimeout(fn, 0) vs setImmediate
 
-我先抛自己的结论
+- 这里有一个 stackoverflow 的解答，但我的个人结论跟他不太一样。
+  [NodeJS - setTimeout(fn,0) vs setImmediate(fn)](https://stackoverflow.com/questions/24117267/nodejs-settimeoutfn-0-vs-setimmediatefn)
 
-setTimeout 和 setImmediate 两个事件注册之后（在同步代码或者同一轮事件循环中注册的），重点在于 setTimeout 注册之后
+- 自己的结论
 
-1. 有耗时的同步代码，并且耗时超过了 Timeout 设定的时间，那么前者先执行；否则后者先执行。
-2. 没有耗时的同步代码，那么执行顺序将不确定。
+  setTimeout 和 setImmediate 两个事件注册之后（在同步代码或者同一轮事件循环中注册的），重点在于 setTimeout 注册之后
+
+  1. 有耗时的同步代码，并且耗时超过了 Timeout 设定的时间，那么前者先执行；否则后者先执行。
+  2. 没有耗时的同步代码，那么执行顺序将不确定。
 
 - 测试代码 1（执行斐波那契计算，增加同步耗时）
 
