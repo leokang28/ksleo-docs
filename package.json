@@ -1,0 +1,19 @@
+{
+  "name": "ksleo-docs",
+  "version": "1.0.0",
+  "description": "my kinds of docs",
+  "main": "index.js",
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "npm run genDir && vuepress build docs",
+    "genDir": "node ./utils/genDirectory.js"
+  },
+  "keywords": [
+    "docs"
+  ],
+  "author": "ksleo",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^3.0.0"
+  }
+}
