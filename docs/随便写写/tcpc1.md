@@ -7,6 +7,10 @@ b类 2^(16-2) - 1 = 16384
 c类 2^(24-3) - 1 = 2097152
 ```
 
+## 3、获取一份主机需求RFC拷贝[Braden 1989a]，阅读有关应用于TCP/IP协议族每一层的稳健性原则。这个原则的参考对象是什么？
+  [Requirements for Internet Hosts -- Communication Layers](https://www.rfc-editor.org/rfc/rfc1122.html#page-12)
+  Be liberal in what you accept, and conservative in what you send
+
 ## 4、获取一份最新的赋值RFC拷贝。“quote of the day”协议的有名端口号是什么？哪个RFC对该协议进行了定义？
   [ASSIGNED NUMBERS](https://www.rfc-editor.org/rfc/rfc1340.html)中定义该端口号为17。
   [Quote of the Day Protocol](https://www.rfc-editor.org/rfc/rfc865.html)定义了该协议。
