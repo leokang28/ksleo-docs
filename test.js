@@ -61,7 +61,7 @@ function fibonacci(n) {
   return current
 }
 
-process.nextTick(() => {
+setImmediate(() => {
   setImmediate(() => {
     console.log('immediate')
   })

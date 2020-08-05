@@ -13,7 +13,7 @@
 
   经过又一次测试，发现之前的描述不是很恰当。新的结论为：执行顺序与两种事件的注册位置和注册之后的同步代码耗时有关。
 
-   - 在同步代码中注册，或者在微任务中注册（`process.nextTick`或者`Promise.then`）。总之，在事件检查队列开始之前注册：
+   - 在同步代码中注册，或者在微任务中注册（`process.nextTick`或者`Promise.then`），或者在`setImmediate`中注册：
 
       1. 有耗时的同步代码，并且耗时超过了 Timeout 设定的时间，那么前者先执行；否则后者先执行。
       2. 没有耗时的同步代码，那么执行顺序将不确定。
@@ -40,6 +40,8 @@
 
   ![https://gitee.com/ksleo/source/raw/master/WeWork%20Helper20191112014007.png](https://gitee.com/ksleo/source/raw/master/QQ20200805-235203@2x.png)
 
+  其余注册情况的执行可以自行测试。
+
 部分斐波那契计算没有超过 <span style="color: red;">1ms</span> 却还是 timer 先执行了，我这里没有列出。是因为除了我们自己的同步任务，node 还有自己的同步流程需要耗时，这些时间要一起考虑。
 
 - 测试代码 2（没有自己的同步代码执行，耗时主要在 node 自己的同步流程中）
@@ -59,6 +61,8 @@
   执行结果
 
   ![https://gitee.com/ksleo/source/master/3DAC55C6-A0BB-4D93-BFD2-2B2A4672881B.png](https://gitee.com/ksleo/source/raw/master/QQ20200805-235141@2x.png)
+
+  其余注册情况的执行可以自行测试。
 
 可以看出执行顺序不确定了，因此我认为是因为 node 内部的同步耗时不确定导致。
 
