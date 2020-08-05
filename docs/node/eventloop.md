@@ -9,15 +9,23 @@
 
 - 自己的结论
 
-  setTimeout 和 setImmediate 两个事件注册之后（在同步代码或者同一轮事件循环中注册的），重点在于 setTimeout 注册之后
+  ~~setTimeout 和 setImmediate 两个事件注册之后（在同步代码或者同一轮事件循环中注册的），重点在于 setTimeout 注册之后~~
 
-  1. 有耗时的同步代码，并且耗时超过了 Timeout 设定的时间，那么前者先执行；否则后者先执行。
-  2. 没有耗时的同步代码，那么执行顺序将不确定。
+  经过又一次测试，发现之前的描述不是很恰当。新的结论为：执行顺序与两种时间的注册位置和注册之后的同步代码耗时有关。
+
+   - 在同步代码中注册，或者在微任务中注册（`process.nextTick`或者`Promise.then`）。总之，在事件检查队列开始之前注册：
+
+      1. 有耗时的同步代码，并且耗时超过了 Timeout 设定的时间，那么前者先执行；否则后者先执行。
+      2. 没有耗时的同步代码，那么执行顺序将不确定。
+  
+   - 在其他异步事件中注册(setInterval, 异步io回调等)：
+
+      无论如何都是后者先执行
 
 - 测试代码 1（执行斐波那契计算，增加同步耗时）
 
   ```js
-  setInterval(() => {
+  process.nextTick(() => {
     setImmediate(() => {
       console.log('immediate')
     })
@@ -25,12 +33,12 @@
       console.log('timer')
     }, 0)
     fibonacci(500000)
-  }, 500)
+  })
   ```
 
   执行结果
 
-  ![https://gitee.com/ksleo/source/raw/master/WeWork%20Helper20191112014007.png](https://gitee.com/ksleo/source/raw/master/WeWork%20Helper20191112014007.png)
+  ![https://gitee.com/ksleo/source/raw/master/WeWork%20Helper20191112014007.png](https://gitee.com/ksleo/source/raw/master/QQ20200805-235203@2x.png)
 
 部分斐波那契计算没有超过 <span style="color: red;">1ms</span> 却还是 timer 先执行了，我这里没有列出。是因为除了我们自己的同步任务，node 还有自己的同步流程需要耗时，这些时间要一起考虑。
 
@@ -50,7 +58,7 @@
 
   执行结果
 
-  ![https://gitee.com/ksleo/source/master/3DAC55C6-A0BB-4D93-BFD2-2B2A4672881B.png](https://gitee.com/ksleo/source/raw/master/3DAC55C6-A0BB-4D93-BFD2-2B2A4672881B.png)
+  ![https://gitee.com/ksleo/source/master/3DAC55C6-A0BB-4D93-BFD2-2B2A4672881B.png](https://gitee.com/ksleo/source/raw/master/QQ20200805-235141@2x.png)
 
 可以看出执行顺序不确定了，因此我认为是因为 node 内部的同步耗时不确定导致。
 
@@ -134,22 +142,29 @@ bluebird 等库实现的 Promise 由于其内部的实现方式，不适用此�
 到此位置 Event Loop 的逻辑已经算是理的差不多了。下面针对我的结论和原文有出入的地方，给出测试代码和执行结果。
 
 ```js
+const fd = fs.openSync('./package.json')
+
 setImmediate(() => {
   console.log('immediate')
   Promise.resolve().then(() => console.log('promise in immediate'))
   process.nextTick(() => console.log('nexttick in immediate'))
 })
+
+fs.readFile(fd, (err, data) => {
+  fs.close(fd, () => {
+    console.log('close')
+    Promise.resolve().then(() => console.log('promise in close event'))
+    process.nextTick(() => console.log('nexttick in close event'))
+  })
+})
+
 setTimeout(() => {
   console.log('timer')
   Promise.resolve().then(() => console.log('promise in timer'))
   process.nextTick(() => console.log('nexttick in timer'))
 }, 0)
 
-fs.readFile('', (err, data) => {
-  console.log('file')
-  Promise.resolve().then(() => console.log('promise in fileio'))
-  process.nextTick(() => console.log('nexttick in fileio'))
-})
+fibonacci(50000)
 
 Promise.resolve().then(() => {
   console.log('promise1')
@@ -158,6 +173,7 @@ Promise.resolve().then(() => console.log('promise2'))
 
 process.nextTick(() => console.log('nexttick1'))
 process.nextTick(() => console.log('nexttick2'))
+
 ```
 
 ::: tip 说明
@@ -166,7 +182,7 @@ process.nextTick(() => console.log('nexttick2'))
 
 执行结果
 
-![event loop test code](https://gitee.com/ksleo/source/raw/master/24E64E50-A2D0-4FF2-98A1-F668A94A8F99.png)
+![event loop test code](https://gitee.com/ksleo/source/raw/master/QQ20200805-234908@2x.png)
 
 #### 其他问题
 

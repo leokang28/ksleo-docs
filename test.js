@@ -60,29 +60,46 @@ function fibonacci(n) {
 
   return current
 }
-setImmediate(() => {
-  console.log('immediate')
-  Promise.resolve().then(() => console.log('promise in immediate'))
-  process.nextTick(() => console.log('nexttick in immediate'))
-})
-setTimeout(() => {
-  console.log('timer')
-  Promise.resolve().then(() => console.log('promise in timer'))
-  process.nextTick(() => console.log('nexttick in timer'))
-}, 0)
 
-fibonacci(500000)
-
-fs.readFile('', (err, data) => {
-  console.log('file')
-  Promise.resolve().then(() => console.log('promise in fileio'))
-  process.nextTick(() => console.log('nexttick in fileio'))
+process.nextTick(() => {
+  setImmediate(() => {
+    console.log('immediate')
+  })
+  setTimeout(() => {
+    console.log('timer')
+  }, 0)
+  fibonacci(500000)
 })
 
-Promise.resolve().then(() => {
-  console.log('promise1')
-})
-Promise.resolve().then(() => console.log('promise2'))
+// const fd = fs.openSync('./package.json')
 
-process.nextTick(() => console.log('nexttick1'))
-process.nextTick(() => console.log('nexttick2'))
+// setImmediate(() => {
+//   console.log('immediate')
+//   Promise.resolve().then(() => console.log('promise in immediate'))
+//   process.nextTick(() => console.log('nexttick in immediate'))
+// })
+
+// fs.readFile(fd, (err, data) => {
+//   fs.close(fd, () => {
+//     console.log('close')
+//     Promise.resolve().then(() => console.log('promise in close event'))
+//     process.nextTick(() => console.log('nexttick in close event'))
+//   })
+// })
+
+// setTimeout(() => {
+//   console.log('timer')
+//   Promise.resolve().then(() => console.log('promise in timer'))
+//   process.nextTick(() => console.log('nexttick in timer'))
+// }, 0)
+
+// fibonacci(50000)
+
+// Promise.resolve().then(() => {
+//   console.log('promise1')
+// })
+// Promise.resolve().then(() => console.log('promise2'))
+
+// process.nextTick(() => console.log('nexttick1'))
+// process.nextTick(() => console.log('nexttick2'))
+
