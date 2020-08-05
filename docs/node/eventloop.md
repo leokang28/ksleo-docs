@@ -50,7 +50,7 @@
 
   执行结果
 
-  ![https://gitee.com/ksleo/source/master/3DAC55C6-A0BB-4D93-BFD2-2B2A4672881B.png](https://gitee.com/ksleo/source/master/3DAC55C6-A0BB-4D93-BFD2-2B2A4672881B.png)
+  ![https://gitee.com/ksleo/source/master/3DAC55C6-A0BB-4D93-BFD2-2B2A4672881B.png](https://gitee.com/ksleo/source/raw/master/3DAC55C6-A0BB-4D93-BFD2-2B2A4672881B.png)
 
 可以看出执行顺序不确定了，因此我认为是因为 node 内部的同步耗时不确定导致。
 
@@ -78,7 +78,7 @@
 
 管理和调度这整个机制的程序就是事件循环（Event Loop）。
 
-![event loop](https://gitee.com/ksleo/source/blob/master/1_3fzASvL5gFrSC64hHKzQOQ.jpeg?raw=true)
+![event loop](https://gitee.com/ksleo/source/raw/master/1_3fzASvL5gFrSC64hHKzQOQ.jpeg)
 
 这只是对 node 的一个宏观概览，内部细节要复杂很多。
 
@@ -119,7 +119,7 @@ libuv Event Loop 提供了四种主要的队列。
 
 上面列出的参考文章提到，事件循环总是由 Expired timers and intervals queue 开始检查，上面四种主要队列，每一个队列被称之为 Event Loop 的一个阶段（phase）。在一个阶段执行完毕后，会去检查 nextTick 和 microtask 队列。也就是说在一个阶段执行完毕进入下一阶段之前，nextTick 和 microtask 队列都会被检查一遍，并且 nextTick queue 优先执行。
 
-![event queue](https://gitee.com/ksleo/source/blob/master/1_aU5dr98pxTsZ4AMfnA6lNA.png?raw=true)
+![event queue](https://gitee.com/ksleo/source/raw/master/1_aU5dr98pxTsZ4AMfnA6lNA.png)
 
 ::: warning
 bluebird 等库实现的 Promise 由于其内部的实现方式，不适用此逻辑
@@ -166,7 +166,7 @@ process.nextTick(() => console.log('nexttick2'))
 
 执行结果
 
-![event loop test code](https://gitee.com/ksleo/source/blob/master/EB34B2BA-A64C-46B4-BF0A-EE2B6EE9AA8B.png?raw=true)
+![event loop test code](https://gitee.com/ksleo/source/raw/master/24E64E50-A2D0-4FF2-98A1-F668A94A8F99.png)
 
 #### 其他问题
 
