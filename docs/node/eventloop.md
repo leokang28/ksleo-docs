@@ -30,7 +30,7 @@
 
   执行结果
 
-  ![https://gitee.com/ksleo/source/blob/master/WeWork%20Helper20191112014007.png?raw=true](https://gitee.com/ksleo/source/blob/master/WeWork%20Helper20191112014007.png?raw=true)
+  ![https://gitee.com/ksleo/source/raw/master/WeWork%20Helper20191112014007.png](https://gitee.com/ksleo/source/raw/master/WeWork%20Helper20191112014007.png)
 
 部分斐波那契计算没有超过 <span style="color: red;">1ms</span> 却还是 timer 先执行了，我这里没有列出。是因为除了我们自己的同步任务，node 还有自己的同步流程需要耗时，这些时间要一起考虑。
 
