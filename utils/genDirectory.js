@@ -8,6 +8,9 @@ const DIRECTORY_ROOT = path.resolve(__dirname, '../docs')
 
 const log = console.log
 
+/**
+ * TODO: 递归遍历目录
+ */
 fs.readdir(DIRECTORY_ROOT, (err, data) => {
   log(chalk.green('开始解析目录...'))
   const map = new Map()
