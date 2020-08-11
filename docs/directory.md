@@ -4,6 +4,7 @@
 ## Rust
 - [Chapter 1 - Common Concepts](/Rust/Common-Concepts.md)
 - [Chapter 2 - Ownership](/Rust/Ownership.md)
+- [Chapter 3 - Using Structs to Structure Related Data](/Rust/struct.md)
 ## 笔记
 - [html个人笔记](/笔记/html.md)
 ## 随便写写

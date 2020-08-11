@@ -398,3 +398,99 @@ let s = String::from("hello world");
 let hello = &s[0..5];
 let world = &s[6..11];
 ```
+
+切片和引用是类似的，不过是用`[start_index..end_index]`这种方式截断了字符串的一部分，该区间是左闭右开的。切片内部实现存储的是首地址和切片长度。
+<img src='https://gitee.com/ksleo/source/raw/master/trpl04-06.svg' style='display:block' width=500 height='auto'>
+
+Rust的`..`范围语法，如果定义的范围从0开始，那么0可以不写。所以，下面两种写法是一样的。
+```rust
+let s = String::from("hello");
+
+let slice = &s[0..2];
+let slice = &s[..2];
+```
+如果范围是从头部到尾部，那么两边的数字都可以省略掉。
+```rust
+let s = String::from("hello");
+
+let len = s.len();
+
+let slice = &s[0..len];
+let slice = &s[..];
+```
+:::warning 注意
+字符串切片下标必须是在合法的utf8字符边界处，如果下标处于多字节字符之中，程序会抛出错误。
+:::
+
+有了这些相关概念，之前的`first_word`函数可以做一些修改。
+```rust
+fn first_word(s: &String) -> &str {
+    let bytes = s.as_bytes();
+
+    for (i, &item) in bytes.iter().enumerate() {
+        if (item == b' ') {
+            return &s[0..i];
+        }
+    }
+    &s[..]
+}
+```
+
+之前的函数，在调用之后清空原来的string，编译阶段不会出错，但是在运行时会引发bug。现在经过改造之后的方法，在编译阶段就会指出问题所在。
+```rust
+fn main() {
+    let mut s = String::from("hello world");
+
+    let word = first_word(&s);
+
+    s.clear(); // error!
+
+    println!("the first word is: {}", word);
+}
+
+// error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable
+```
+回顾之前的规则，当存在immutable的引用时，不能同时存在mutable的引用。`clear`方法需要清空原字符串，所以它需要一个mutable的引用，Rust是不允许的并在编译阶段直接抛错。Rust编译器不光让自定义API更加易用，并且在编译阶段排除了许多潜在bug。
+
+##### 字符串字面量是切片类型
+
+之前提到，字符串字面量直接存储在二进制文件中。
+```rust
+let s = "hello";
+```
+这里变量`s`的类型是`&str`，它是一个切片，指一个向二进制文件中字面量存储位置的指针。这就是为什么字符串字面量不可以修改了，因为`&str`是一个immutable引用。
+
+##### 字符串切片作为函数参数
+
+之前的`first_word`函数，有一个更好的定义方式是
+```rust
+fn first_word(s: &str) -> &str
+```
+此时我们可以传`&String`类型或者`&str`类型。
+
+```rust
+fn main() {
+    let my_string = String::from("hello world");
+
+    // first_word works on slices of `String`s
+    let word = first_word(&my_string[..]);
+
+    let my_string_literal = "hello world";
+
+    // first_word works on slices of string literals
+    let word = first_word(&my_string_literal[..]);
+
+    // Because string literals *are* string slices already,
+    // this works too, without the slice syntax!
+    let word = first_word(&my_string);
+}
+```
+
+### 其他切片类型
+
+数组切片
+```rust
+let arr = [1,2,3,4,5];
+let arr_slice = &[0..2];
+```
+`arr_slice`是`&[i32]`类型的，它跟`&str`的表现没有任何区别：存储一个头指针和内容长度。
