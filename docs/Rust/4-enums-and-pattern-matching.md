@@ -170,7 +170,7 @@ let sum = x + y;
 
 通常为了使用`Option<T>`内部的`T`值，你的代码需要覆盖所有的枚举变体。某些代码仅在`Some<T>`运行，此时代码能够访问到内部的`T`数据。某些代码仅在`None`运行，作空值逻辑处理。`match`表达式是可以实现上述需求的一个控制流程。
 
-## `match`流程控制表达式
+## Section 2 - `match`流程控制表达式
 
 `match`可以通过许多的*patterns（匹配模型）*去对比，并在相应的匹配模型命中的情况下执行某些代码。匹配模型可以是字面量值、变量、通配符等等。`match`流程控制强大之处在于丰富的匹配模型，以及编译器可以确认所有的可能情况都被涵盖。
 
@@ -235,4 +235,65 @@ fn value_in_cents(coin: Coin) -> u8 {
 假如调用`value_in_cents(Coin::Quarter(UsState::Alabama));`，变量`coin`的值为`Coin::Quarter(UsState::Alabama)`。在match表达式中，最后一个匹配模型会命中，此时`state`变量绑定的值将会是`UsState::Alabama`，然后可以在`println!`表达式中使用该匹配模型内部绑定的状态值。
 
 ### Matching with Option<T>
+
+实现一个函数接受一个`Option<i32>`作为参数，如果内部有值则+1，如果没有值则不做任何逻辑且返回`None`。
+```rust
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i + 1),
+    }
+}
+```
+
+### Matches要全面
+
+```rust
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        Some(i) => Some(i + 1),
+    }
+}
+
+// error[E0004]: non-exhaustive patterns: `None` not covered
+```
+
+上面的代码中，`None`的情况没有被覆盖到，因此有可能会出现bug。好在Rust在编译阶段就能指出这个地方有问题。在`match`表达式中必须涵盖任何一种可能的情况，以保证代码的安全和健壮。
+
+### _占位符
+
+当不想列举一些可能情况时，可以用占位符`_`来替代。
+```rust
+let some_u8_value = 0u8;
+match some_u8_value {
+    1 => println!("one"),
+    3 => println!("three"),
+    5 => println!("five"),
+    7 => println!("seven"),
+    _ => (),
+}
+```
+`_`占位符会匹配所有的情况，因此需要将它放在最后面，以免覆盖我们想要处理的情况。
+
+当只需要处理所有情况之中的一种时，`match`表达式就显得有些啰嗦了。所以在这种场景下，Rust为我们提供了`if let`。
+
+## Section 3 - `if let`流程控制表达式
+
+`if let`表达式可以让我们只关注一种需要处理的情况而忽略其他所有的情况。比如之前的例子
+```rust
+let some_u8_value = Some(0u8);
+match some_u8_value {
+    Some(3) => println!("three"),
+    _ => (),
+}
+```
+
+这里只处理了值为3的情况，其余情况都被省略了，此时`if let`要比`match`在书写上更加简洁。
+```rust
+if let Some(3) = some_u8_value {
+    println!("three");
+}
+```
+
+可以将`if let`理解为`match`的一种语法糖。还可以在后面加`else`分支，它的作用和`_`占位符是一样的效果。
 

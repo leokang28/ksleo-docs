@@ -6,6 +6,7 @@
 - [Chapter 2 - Ownership](/Rust/2-ownership.md)
 - [Chapter 3 - Using Structs to Structure Related Data](/Rust/3-struct.md)
 - [Chapter 4 - Enums and Pattern Matching](/Rust/4-enums-and-pattern-matching.md)
+- [Chapter 5 - Managing Growing Projects with Packages, Crates, and Modules](/Rust/5-packages-and-modules.md)
 ## 笔记
 - [html个人笔记](/笔记/html.md)
 ## 随便写写
