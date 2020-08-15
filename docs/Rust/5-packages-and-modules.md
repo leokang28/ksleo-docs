@@ -88,4 +88,268 @@ mod front_of_house {
 
 ## Section 3 - Paths for Referring to an Item in the Module Tree
 
-如何导入模块中的内容使用，Rust使用和文件系统路径相似的概念。
+如何导入模块中的内容使用，Rust使用和文件系统路径相似的概念。调用一个外部方法的时候需要知道它的路径。
+
+路径有两种形式：
+
+ - 从crate根节点开始的绝对路径。
+ - 从当前模块开始的相对路径，在当前模块中调用`self`、`super`或者其他关键字和名称。
+
+绝对路径和相对路径都是一组通过`::`符号分隔的标识符组成。
+
+回到之前的例子，应该如何调用`add_to_waitlist`这个函数呢？或者说，这个函数的路径是什么？下面的代码用两种方式来调用该方法。
+```rust
+mod front_of_house {
+    mod hosting {
+        fn add_to_waitlist() {}
+    }
+}
+
+pub fn eat_at_restaurant() {
+    // abs path
+    crate::front_of_house::hosting::add_to_waitlist();
+    // relative path
+    front_of_house::hosting::add_to_waitlist();
+}
+```
+
+第一种方式使用绝对路径调用函数。`add_to_waitlist`函数和`eat_at_restaurant`函数定义在同一个crate中，因此可以使用`crate`关键字作为绝对路径的开头。紧接着引入连续的模块名直到该函数的位置，和文件系统路径很相似。
+
+第二种方式使用相对路径调用函数。路径是以`front_of_house`开头的，`front_of_house`模块和`eat_at_restaurant`函数定义在同一层级。这和文件系统中，使用相同层级文件的引入方式类似。
+
+具体使用哪种方式调用模块取决于你的项目结构。通常倾向于使用绝对路径，这种调用方式下，代码定义和模块引用更加独立。
+
+目前这个代码还是编译不通过的，编译器此时会报错说hosting模块是private的。此时我们的调用路径没有错，但是我们并没有该模块的访问权限。
+
+模块不光能很好的组织代码，它同时具有定义*privacy boundary*权限界限的功能。具体的实现代码不允许外部代码访问，调用和依赖。如果你想让你的某些内容变为私有，将它封装到一个模块里就行。
+
+Rust权限系统默认所有实体（方法、结构体、变量、枚举等）都是私有的。父模块中不能调用子模块的内容，但是子模块可以调用父模块的内容。原因在于子模块隐藏了自己的实现细节，但是它可以访问自己定义所在的上下文环境。
+
+### Exposing Paths with the pub Keyword
+
+我们可以使用`pub`关键字将默认私有的内容对外暴露。
+```rust
+mod front_of_house {
+    pub mod hosting {
+        fn add_to_waitlist() {}
+    }
+}
+```
+
+此时编译代码，编译器依旧报错，此时错误是函数`add_to_waitlist`是私有的。`pub`模块对外暴露模块时，它里面的内容依旧默认是私有的。
+
+因此把`add_to_waitlist`函数也用`pub`关键字修饰。
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+```
+
+我们再通过绝对路径和相对路径回顾一下引用过程。
+
+在绝对路径中，路径用模块树的根节点`crate`开头。然后是定义在根节点中的`front_of_house`模块。`front_of_house`是私有模块，但是由于`eat_at_restaurant`模块是跟它定义在同一个模块中的，因此在他们之间可以调用。接下来是`hosting`公共模块，最后是`ad_to_waitlist`公共方法，此时函数调用生效。
+
+在相对路径中，除了第一步以外。其余逻辑和绝对路径中是一样的。相对路径中使用`front_of_house`作为路径的开头。`front_of_house`和`eat_at_restaurant`是定义在同一个模块中的，因此以它们的父模块作为相对路径的开始是正常的。
+
+### Starting Relative Paths with super
+
+我们可以使用`super`关键字来代表父模块。这个关键字和文件系统中的`..`语法类似。
+```rust
+fn serve_order() {}
+
+mod back_of_house {
+    fn fix_incorrect_order() {
+        cook_order();
+        super::serve_order();
+    }
+
+    fn cook_order() {}
+}
+```
+
+`fix_incorrect_order`函数定义在`back_of_house`模块中。可以使用`super`进入到它的父模块`crate`，也就是根模块中。在根模块中就可以引用到`serve_order`方法了。
+
+### Making Structs and Enums Public
+
+`pub`关键字也可以用来修饰结构体和枚举，但是另外有一些细节需要注意。`pub`关键字修饰的结构体，它的字段依旧是私有的。
+```rust
+mod back_of_house {
+    pub struct Breakfast {
+        pub toast: String,
+
+        seasonal_fruit: String,
+    }
+
+    impl Breakfast {
+        pub fn summer(toast: &str) -> Beakfast {
+            Breakfast {
+                toast: String::from(toast),
+                seasonal_fruit: String::from("peaches"),
+            }
+        }
+    }
+}
+
+pub fn eat_at_restaurant() {
+    let mut meal = back_of_house::Breakfast::summer("Rye");
+
+    meal.toast = String::from("Wheat");
+
+    println!("I'd like {} toast please", meal.toast);
+}
+```
+
+在`eat_at_restaurant`函数中可以访问`back_of_house::Breakfast`的`toast`字段，因为它是公开的，但是我们不能访问`seasonal_fruit`字段，因为字段默认都是私有的。同时，由于`back_of_house::Breakfast`具有一个私有字段，因此这个结构体需要提供一个作用类似于工厂函数的方法，用来创建实例，这里是`summer`方法。如果结构体没有提供这样的方法，那么我们将无法实例化它，因为在外部无法对私有字段进行赋值。
+
+在枚举类型中，`pub`字段修饰的枚举类型，它下面的字段同时也都是公开的。
+```rust
+mod back_of_house {
+    pub enum Appetizer {
+        Soup,
+        Salad,
+    }
+
+    pub fn eat_at_restaurant() {
+        let order1 = back_of_house::Appetizer::Soup;
+        let order2 = back_of_house::APpetizer::Salad;
+    }
+}
+```
+
+如果`enum`里的字段是私有的，那么这个enum就没有任何的意义，所有当`enum`被修饰为`pub`时，它内部的字段都自动转为公开。
+
+## Section 4 - Bringing Paths into Scope with the use Keyword
+
+之前的例子中，我们写的模块引用代码中，模块路径很长而且很多内容都是重复的。使用`use`关键字将模块路径导入到当前模块中，可以解决这个问题。
+
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+use crate::front_of_house::hosting;
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+```
+
+使用`use`关键字和一个路径名称，类似于文件系统中创建一个符号链接。也可以通过`use`关键字引入一个相对路径：`use self::front_of_house::hosting;`。
+
+### Creating Idiomatic use Paths
+
+思考一个问题——为什么要通过`use crate::front_of_house::hosting`引入模块然后再通过`hosting`模块调用`eat_at_restaurant`方法。而不是直接引入`eat_at_restaurant`方法进行调用呢？引入要调用函数的父模块是惯用的方式，因为这样能让我们在调用时清楚的知道这个函数的归属。而引入结构体、枚举以及一些其他内容时，惯用的方式是直接引入全部的路径。
+```rust
+use std::collections::HashMap;
+
+fn main() {
+    let mut map = HashMap::new();
+    map.insert(1, 2);
+}
+```
+
+这里没有强制性的要求，只不过这种方式是Rust代码惯用的方式。
+
+有一种例外情况是，我们引入了两个模块中名称相同的两个内容，此时需要明确其父模块，因为Rust是不允许同名的。
+```rust
+use std::fmt;
+use std::io;
+
+fn function1() -> fmt::Result{}
+
+fn function2() -> io::Result{}
+```
+
+### Providing New Names with the as Keyword
+
+引入不同模块的同名内容的另一个解决方案是通过`as`关键字对其重新命名一个本地使用名称，或者说是别名。
+
+```rust
+use std::fmt::Result;
+use std::io::Result as IoResult;
+
+fn function1() -> Result{}
+
+fn function2() -> IoResult<()>{}
+```
+
+### Re-exporting Names with pub use
+
+当我们使用`use`关键字引入一个模块时，它仅在当前模块中是可用的。为了让调用我们自己模块的代码也能够使用这个模块名称，我们可以通过`pub use`关键字对其进行二次导出。
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+    }
+}
+
+pub use crate::front_of_house::hosting;
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+```
+
+### Using Nested Paths to Clean Up Large use Lists
+
+如果我们引入一个模块中的多个内容，每行引入一个模块会让我们的文件内容变得很长。例如：
+```rust
+use std::cmp::Ordering;
+use std::io;
+```
+
+可以通过嵌套的方式引入同一个模块中的多个内容。
+```rust
+use std::{cmp::Ordering, io};
+```
+
+在大型项目中，这种方式能有效减少use语句的数量。同时嵌套引用允许我们在任意的层级进行嵌套。
+```rust
+use std::io::{self, Write};
+```
+
+### The Glob Operator
+
+如果想要引入模块下的所有`pub`的内容，可以使用通配符`*`。
+```rust
+use std::collections::*;
+```
+这种方式需要谨慎使用，因为有可能会跟你本地的一些名称冲突。这种引入方式一般用在测试模块中。
+
+## Section 5 - Separating Modules into Different Files
+
+当模块越来越大，你就需要分别将这些代码分割到不同的文件中去了。
+
+src/lib.rs
+```rust
+mod front_of_house;
+
+pub use crate::front_of_house::hosting;
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+```
+
+src/front_of_house.rs
+```rust
+pub mod hosting {
+    pub fn add_to_waitlist() {}
+}
+```
+
+在`mod front_of_house`后接一个分号，此时Rust会加载跟这个模块名称相同的文件内容。我们可以将front_of_house文件再分割。
+
+src/front_of_house.rs
+```rust
+pub mod hosting;
+```
+
+src/front_of_house/hosting.rs
+```rust
+pub fn add_to_waitlist() {}
+```
