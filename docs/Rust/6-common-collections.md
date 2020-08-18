@@ -186,7 +186,7 @@ let hello = String::from("Hola");
 
 `String`类型大小、内容都可以改变，可以像`Vec<T>`一样用push的方式追加数据。此外，也可以通过`+`运算符或者`format!`宏来进行字符串拼接。
 
-##### Appending to a String with `push_str` and `push`
+#### Appending to a String with `push_str` and `push`
 
 `push_str`方法追加一个字符串切片。
 ```rust
@@ -200,7 +200,7 @@ s.push_str("bar");
 s.push('a');
 ```
 
-##### Concatenation with the + Operator or the format! Macro
+#### Concatenation with the + Operator or the format! Macro
 
 `+`运算符拼接字符串
 ```rust
@@ -236,7 +236,7 @@ let s = format!("{}-{}-{}", s1, s2, s3);
 
 在其他语言中，使用索引访问字符串中的某个字符是常见的操作。但是在Rust中会报错，Rust不支持数字索引，要解释这个问题，需要讨论Rust如何在内存中存储String数据。
 
-##### Internal Representation
+#### Internal Representation
 
 `String`类型是对`Vec<u8>`类型的一层封装。来看一些utf8编码的字符串示例
 ```rust
@@ -251,7 +251,7 @@ let answer = &hello[0];
 ```
 这个例子中，`answer`会是`З`吗？在utf8编码中，3的第一个字节是`208`，第二个字节是`151`，所以`answer`的值是`208`，而`208`不是一个有效字符。这跟用户期望返回第一个字符不一致，但Rust在0索引处存储的值就是`208`的16进制。用户通常不希望获得字节类型的数据，哪怕字符串全部是由拉丁字母组成的。如果`&"hello"[0]`是一个合法的索引，那么它也只会返回`104`而不是`h`。因此，Rust不允许使用索引访问字符串中的字符，在编译阶段就抛出错误，以免在开发阶段对代码的执行产生误解。
 
-##### Bytes and Scalar Values and Grapheme Clusters
+#### Bytes and Scalar Values and Grapheme Clusters
 
 从Rust的视角来看，有三种相关的方式查看String中的数据：*Bytes（二进制）*，*scalar values（标量）*，*grapheme clusters（词组）*（最接近人类字符的概念）。
 
@@ -342,3 +342,107 @@ let mut scores: HashMap<_, _> =
 ### Hash Maps and Ownership
 
 对于实现了`Copy`trait的类型来说，比如`i32`，值是拷贝进哈希表的。对于owned的数据类型来说，比如`String`，所有权会被转移到哈希表上。
+```rust
+use std::collections::HashMap;
+
+let field_name = String::from("Favorite color");
+let field_value = String::from("Blue");
+
+let mut map = HashMap::new();
+map.insert(field_name, field_value);
+
+// error[E0382]: borrow of moved value: `field_name`
+```
+
+在这个例子中，当`field_name`和`field_value`被添加到map之后，我们是不能使用这个值的，因为所有权被传递到了map中。
+
+如果我们使用引用插入到哈希表中，那么所有权将不会被移动到哈希表中。但是，此时需要保证引用的有效时间至少要和哈希表一致。
+
+### Accessing Values in a Hash Map
+
+`get`方法获取哈希表的值。`get`方法返回`Option<&V>`。
+```rust
+use std::collection::HashMap;
+
+let mut scores = HashMap::new();
+
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Yellow"), 50);
+
+let team_name = String::from("Blue");
+let score = scores.get(&team_name);
+```
+
+使用`for`循环遍历键值对
+```rust
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Yellow"), 50);
+
+for (key, value) in &scores {
+    println!("{}: {}", key, value);
+}
+```
+
+### Updating a Hash Map
+
+键值对的数量是可以增加的，但是每个键只能关联到一个值。当你需要修改哈希表的值时，需要考虑到值已经关联了值的情况，覆盖、舍弃还是合并。
+
+#### Overwriting a Value
+
+如果在插入值之后，重新对同一个键进行了插值，那么新值会将旧值覆盖。
+```rust
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Blue"), 25);
+
+println!("{:?}", scores);
+// 25
+```
+
+#### Only Inserting a Value If the Key Has No Value
+
+检查键是否关联了值，如果没有就给他它关联一个新值，这是很常见的逻辑。哈希表对这种情况提供了一个特殊的API`entry`，它的参数是你需要检查的键，返回一个`Entry`枚举，代表一个值是否存在。
+```rust
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+scores.insert(String::from("Blue"), 10);
+
+scores.entry(String::from("Yellow")).or_insert(50);
+scores.entry(String::from("Blue")).or_insert(50);
+
+println!("{:?}", scores);
+// {"Yellow": 50, "Blue": 10}
+```
+
+`or_insert`方法当键存在时，返回一个该键值的可变引用。如果不存在，则把参数当作值插入到哈希表中然后返回一个可变引用。
+
+#### Updating a Value Based on the Old Value
+
+另一种常见场景是使用旧值更新哈希表的新值。
+```rust
+use std::collections::HashMap;
+
+let text = "hello world wonderful world";
+
+let mut map = HashMap::new();
+
+for word in text.split_whitespace() {
+    let count = map.entry(word).or_insert(0);
+    *count += 1;
+}
+
+println!("{:?}", map);
+// {"world": 2, "hello": 1, "wonderful": 1}
+```
+
+### Hashing Functions
+
+`HashMap`默认使用*[cryptographically strong](https://www.131002.net/siphash/siphash.pdf)*散列函数。它对DoS攻击有很好对抵抗性。这个算法不是最快的，但是从安全性的角度考虑，舍弃这点性能是值得的。如果你想自己指定散列函数，你可以指定一个*hasher*来自己切换散列函数。hasher是一个实现了`BuildHasher`trait的类型。

@@ -76,7 +76,7 @@ Length|Signed|Unsigned
 arch|isize|usize
 无符号整型范围：0 ~ $2^n - 1$，有符号整型范围：$-2^{n-1}$ ~ $2^{n-1} - 1$
 
-##### 整型字面量
+#### 整型字面量
 Number|literals	Example
 :-|:-
 Decimal|98_222
@@ -122,7 +122,7 @@ let third = x.2;
 ### 数组（Array）
 数组中的元素类型必须一致，不可动态扩容。与Vector不同，Vector是标准库提供的一种数据存储结构，支持动态扩容。
 
-###### 数组定义方式
+##### 数组定义方式
 ```rust
 // 编译器推断类型和数量
 let x = [1, 2, 3];
@@ -132,7 +132,7 @@ let x:[i32; 3] = [1, 2, 3];
 let x:[3; 5]
 ```
 
-##### 数组访问
+#### 数组访问
 通过下标的形式，不允许越界。
 ```rust
 x[0]
@@ -219,7 +219,7 @@ println!("condition was true");
 println!("condition was false");
 }
 ```
-##### 多条件时用`else if`
+#### 多条件时用`else if`
 ```rust
 let number = 6;
 
@@ -233,7 +233,7 @@ println!("number is divisible by 2");
 println!("number is not divisible by 4, 3, or 2");
 }
 ```
-##### 在`let`语句中使用if表达式
+#### 在`let`语句中使用if表达式
 由于if是一个表达式，所以它可以用于let语句的右值。这种情况下，if表达式各条件分支返回的数据类型必须一致，这是因为在编译阶段Rust必须确定变量的类型，编译器不支持运行时动态确定变量类型，这样会使编译器更加复杂并且安全性降低。
 ```rust
 let condition = true;
@@ -246,7 +246,7 @@ let number = if condition { 5 } else { "six" };
 ### 循环
 Rust有三种执行循环的方式，`loop`,`while`和`for`。
 
-##### loop
+#### loop
 ```rust
 loop {
 // do something
@@ -257,7 +257,7 @@ break //something
 ```
 `loop`循环执行同一段代码块。可以通过break关键字从`loop`循环中返回一个值。
 
-##### while
+#### while
 ```rust
 fn main() {
 let mut number = 3;
@@ -273,7 +273,7 @@ println!("LIFTOFF!!!");
 ```
 `while`循环整合了`loop`、`if`、`else`、`break`的功能，让代码块更清晰，没有很深的嵌套。
 
-###### for
+##### for
 ```rust
 fn main() {
 let a = [10, 20, 30, 40, 50];

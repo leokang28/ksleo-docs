@@ -75,7 +75,7 @@ Rust使用了一种不同的方式：当owner变量所在的作用域执行结�
 在C++中，这种在生命周期结束时重新分配资源的模式被称作*Resource Acquisition Is Initialization (RAII)*。如果你对这种模式比较熟悉，Rust的`drop`方法同样也很容易理解。
 :::
 
-##### Ways Variables and Data Interact: Move
+#### Ways Variables and Data Interact: Move
 
 在Rust中多个变量对相同数据的交互方式有多种。
 ```rust
@@ -115,7 +115,7 @@ println!("{}", s1);
 如果你熟悉深复制和浅复制的概念，之前`String`类型下复制指针、长度和容量数据结构的操作，就可以认为是浅复制。但是由于Rust同时又让第一个值`s1`失效了，因此在Rust中称为*move*而不是*shallow copy*。在刚才的例子中，可以认为`s1`*move*到了`s2`。
 <img src='https://gitee.com/ksleo/source/raw/master/trpl04-04.svg' style='display:block' width=350 height='auto'>
 
-##### Ways Variables and Data Interact: Clone
+#### Ways Variables and Data Interact: Clone
 
 如果我们执行heap数据深复制，而不仅仅是stack浅复制，可以调用`clone`方法。
 ```rust
@@ -125,7 +125,7 @@ let s2 = s1.clone();
 println!("s1 = {}, s2 = {}", s1, s2);
 ```
 
-##### Stack-Only Data: Copy
+#### Stack-Only Data: Copy
 
 ```rust
 let x = 5;
@@ -452,7 +452,7 @@ fn main() {
 ```
 回顾之前的规则，当存在immutable的引用时，不能同时存在mutable的引用。`clear`方法需要清空原字符串，所以它需要一个mutable的引用，Rust是不允许的并在编译阶段直接抛错。Rust编译器不光让自定义API更加易用，并且在编译阶段排除了许多潜在bug。
 
-##### 字符串字面量是切片类型
+#### 字符串字面量是切片类型
 
 之前提到，字符串字面量直接存储在二进制文件中。
 ```rust
@@ -460,7 +460,7 @@ let s = "hello";
 ```
 这里变量`s`的类型是`&str`，它是一个切片，指一个向二进制文件中字面量存储位置的指针。这就是为什么字符串字面量不可以修改了，因为`&str`是一个immutable引用。
 
-##### 字符串切片作为函数参数
+#### 字符串切片作为函数参数
 
 之前的`first_word`函数，有一个更好的定义方式是
 ```rust
