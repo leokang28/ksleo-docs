@@ -8,6 +8,7 @@
 - [Chapter 4 - Enums and Pattern Matching](/Rust/4-enums-and-pattern-matching.md)
 - [Chapter 5 - Managing Growing Projects with Packages, Crates, and Modules](/Rust/5-packages-and-modules.md)
 - [Chapter 6 - Common Collections](/Rust/6-common-collections.md)
+- [Chapter 7 - Error Handling](/Rust/7-error-handling.md)
 ## 笔记
 - [html个人笔记](/笔记/html.md)
 ## 随便写写

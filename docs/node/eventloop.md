@@ -117,17 +117,17 @@ Event Queue 不是简单的一个队列，它包括很多的子队列，这些�
 
 libuv Event Loop 提供了四种主要的队列。
 
-- <span style="font-weight: bold;">Expired timers and intervals queue</span> - setTimeout 和 setInterval 注册的事件
-- <span style="font-weight: bold;">IO Events Queue</span> - 纯 IO 事件
-- <span style="font-weight: bold;">Immediates Queue</span> - setImmediate 注册的事件
-- <span style="font-weight: bold;">Close Handlers Queue</span> - 任意的 close 事件
+- **Expired timers and intervals queue** - setTimeout 和 setInterval 注册的事件
+- **IO Events Queue** - 纯 IO 事件
+- **Immediates Queue** - setImmediate 注册的事件
+- **Close Handlers Queue** - 任意的 close 事件
 
 除了这四种主要的队列，还有两个事件队列。
 
-- <span style="font-weight: bold;">Next Ticks Queue</span> - `process.nextTick`
-- <span style="font-weight: bold;">Other Microtasks Queue</span> - 例如 Promise.resolve
+- **Next Ticks Queue** - `process.nextTick`
+- **Other Microtasks Queue** - 例如 Promise.resolve
 
-##### 队列的执行顺序
+#### 队列的执行顺序
 
 上面列出的参考文章提到，事件循环总是由 Expired timers and intervals queue 开始检查，上面四种主要队列，每一个队列被称之为 Event Loop 的一个阶段（phase）。在一个阶段执行完毕后，会去检查 nextTick 和 microtask 队列。也就是说在一个阶段执行完毕进入下一阶段之前，nextTick 和 microtask 队列都会被检查一遍，并且 nextTick queue 优先执行。
 
