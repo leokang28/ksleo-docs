@@ -10,6 +10,7 @@
 - [Chapter 6 - Common Collections](/Rust/6-common-collections.md)
 - [Chapter 7 - Error Handling](/Rust/7-error-handling.md)
 - [Chapter 8 - Generic Types, Traits, and Lifetimes](/Rust/8-generic-types-traits-and-lifetimes.md)
+- [Chapter 9 - Writing Automated Tests](/Rust/9-write-tests.md)
 ## 笔记
 - [html个人笔记](/笔记/html.md)
 ## 随便写写

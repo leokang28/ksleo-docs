@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "docs:dev": "npx vuepress dev docs",
-    "docs:build": "npm run genDir && npx vuepress build docs && sh ./deploy.sh",
-    "genDir": "node ./utils/genDirectory.js"
+    "docs:build": "npm run gd && npx vuepress build docs && sh ./deploy.sh",
+    "gd": "node ./utils/genDirectory.js"
   },
   "keywords": [
     "docs"
