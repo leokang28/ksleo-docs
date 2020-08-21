@@ -77,7 +77,7 @@ let num = v.get(100);
 
 当使用`get`方法时，如果发生越界访问，它会返回`None`，后续应当有处理`Some(&i32)`和`None`的逻辑。这种方式相比程序终止，有更好的用户体验。
 
-当创建了一个有效引用，borrow checker会强制执行所有权和[引用规则](https://leokang28.github.io/Rust/2-ownership.html#the-rules-of-references)检查来确保当前引用和其他指向vector内容的引用也是有效的。
+当创建了一个有效引用，borrow checker会强制执行所有权和[引用规则](/Rust/2-ownership.html#the-rules-of-references)检查来确保当前引用和其他指向vector内容的引用也是有效的。
 
 ```rust
 let mut v = vec![1, 2, 3, 4, 5];
