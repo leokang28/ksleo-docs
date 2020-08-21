@@ -685,3 +685,211 @@ fn main() {
 单独的生命周期声明没什么意义，因为它的作用是告知编译器引用之间的生命周期关系。
 
 ### 在函数声明中使用生命周期声明
+
+现在开始在`longest`函数上下文中定义生命周期。泛型生命周期参数需要像泛型类型参数一样，包在`<>`中。生命周期参数的声明中有一条限制是，所有的参数和返回值必须要有一致的生命周期参数。
+```rust
+fn longest<'a>(x:&'a str, y:&'a str) -> &'a str {
+    if x.len > y.len {
+        x
+    } else {
+        y
+    }
+}
+```
+
+`longest`函数接收两个参数，且生命周期长度至少是`'a`，且返回值的生命周期也是`'a`。意味着函数返回值的生命周期和参数中生命周期较小的那个相等。记住，当我们定义声明生命周期参数时，对参数和返回值真正的生命周期没有任何影响。它的作用是我们指明borrow checker需要拒绝不符合这些限制的参数。函数不需要知道参数的确切生命周期，只需要把函数声明中符合条件的最小生命周期替换为`'a`。
+
+声明生命周期只需要在函数签名中，Rust可以自动分析代码。然而当函数有外部代码或者引用的时候，Rust编译器就不能靠自己分析生命周期了，所以需要手动指定。
+
+`'a`泛型生命周期会等于参数`x`和`y`中生命周期较小的那一个。因为我们指定返回值的生命周期也是`'a`，所以返回值的生命周期也和`x`和`y`中较小的那一个相等。
+
+我们通过一个例子来看当参数真正的生命周期不相等时，生命周期参数如何对函数做限制。
+```rust
+fn main() {
+    let string1 = String::from("long string is long");
+
+    {
+        let string2 = String::from("xyz");
+        let result = longest(string1.as_str(), string2.as_str());
+        println!("The longest string is {}", result);
+    }
+}
+
+// output: The longest string is long string is long
+```
+
+`string1`的生命周期是外部作用域（main函数）。`string2`的生命周期是内部作用域（代码块）。`result`引用某个玩意儿，生命周期是内部作用域。这个代码能够正常执行并输出。
+
+接下来，把`result`的定义和`println!`移到外部作用域。
+```rust
+fn main() {
+    let string1 = String::from("long string is long");
+    let result;
+
+    {
+        let string2 = String::from("xyz");
+        result = longest(string1.as_str(), string2.as_str());
+    }
+    println!("The longest string is {}", result);
+}
+
+// error[E0597]: `string2` does not live long enough
+```
+
+这时候编译会报错。之前提到返回值的生命周期等于参数生命周期较小的那个，这里也就是`string2`。但是当`result`的引用被使用时，`string2`的生命周期已经结束，其内存已经被释放，所以`result`是一个悬空指针，Rust编译器不会让这种情况通过编译。
+
+这个错误表示，`result`要在`println!`宏调用它的时候有效，则`string2`就必须在外部作用域结束前有效。
+
+### Thinking in Terms of Lifetimes
+
+定义函数生命周期参数的方式取决于函数的具体功能。如果你的函数任何情况下都返回第一个参数，那么就不需要对第二个参数进行生命周期定义。因为第二个参数与第一个参数或者返回值没有任何生命周期关系。
+```rust
+fn longest<'a>(x: &'a str, y: &str) -> &'a str {
+    x
+}
+```
+
+当函数返回一个引用时，它的生命周期要和参数列表其中一个参数的生命周期匹配。如果函数的返回值没有指向任何参数，而是指向一个函数内部创建的值，那么这个返回值在函数结束后会成为一个悬空指针。
+```rust
+fn longest<'a>(x: &str, y: &str) -> &'a str {
+    let result = String::from("really long string");
+    result.as_str()
+}
+
+// error[E0515]: cannot return value referencing local variable `result`
+```
+
+即使我们定义了泛型生命周期参数，编译器还是不会通过这个代码，因为返回值本质上和参数没有任何关联。
+
+总之，生命周期语法需要函数参数和返回值之间有所关联。只有这样Rust编译器才有足够的判断依据来允许执行内存安全的操作和禁止任何可能创建悬空指针的操作。
+
+### Lifetime Annotations in Struct Definitions
+
+至今我们定义的结构体字段都是有所有权的，结构体字段也可以包含引用。当结构体字段包含引用的时候，需要对每个引用类型的字段定义生命周期。
+```rust
+struct ImportantExcerpt<'a> {
+    part: &'a str,
+}
+
+fn main() {
+    let novel = String::from("Call me Ishmael. Some years ago...");
+    let first_sentence = novel.split('.').next().expect("Could not find a '.'");
+    let i = ImportantExcerpt {
+        part: first_sentence,
+    };
+}
+```
+
+这个结构体有一个字段`part`，存储一个`&str`类型的数据。泛型生命周期参数用`<>`包起来，放在结构体名称和结构体代码块之间。这个定义意味着，`ImportantExcerpt`类型的实例，其生命周期不超过`part`字段引用的生命周期。
+
+`main`方法创建了一个`ImportantExcerpt`实例，并且将`novel`变量的部分引用赋值给实例的字段。`novel`在实例创建之前初始化，而且`novel`在作用域执行结束，实例被释放后才会被释放，因此实例中的引用是有效的。
+
+### Lifetime Elision
+
+现在了解了所有的引用都有生命周期，而且你需要为使用了引用的结构体和函数声明生命周期参数。之前我们写过一个获取句子中第一个单词的[方法](Rust/2-ownership.html#section-3-the-slice-type)，这个函数没有生命周期声明，而且编译通过了。
+```rust
+fn first_word(s: &str) -> &str {
+    let bytes = s.as_bytes();
+
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[0..i];
+        }
+    }
+
+    &s[..]
+}
+```
+
+这个函数没有生命周期声明但是编译通过是因为一些历史原因：早起的Rust版本（<1.0）中，这个代码是不能编译通过的，因为要求所有引用都声明声明周期。在那个版本下，这个函数的签名是
+>`fn first_word<'a>(s: &'a str) -> &'a str {`
+
+在编写了大量的Rust代码之后，Rust核心团队发现，Rust程序员在一些特定场景下需要一直重复同样的生命周期声明。这些场景是可预测而且遵循特定的模式的。维护者将这些模式加入编译器，这样编译器就能对这些场景进行生命周期推断，而不需要程序员显式指定了。
+
+今后可能还会出现其他特定的模式，然后被加入到编译器中。以后需要指定生命周期的场景可能会越来越少。
+
+这些用来分析引用生命周期，被编写进Rust编译器的模式被称为*生命周期省略规则（lifetime elision rules）*。这不是给程序员指定的规则，而是编译器的一个规则集合，编译器通过这个集合判断如果你的代码场景符合其中的某个模式，那么就不用显式声明生命周期。
+
+函数参数的生命周期称为*input lifetimes*，函数返回值的生命周期称为*output lifetimes*
+
+当没有指定生命周期时，编译器通过三个规则来判断引用的生命周期。规则一适用于*input lifetimes*，规则二三适用于*output lifetimes*。如果通过三条规则编译器都不能确定引用的生命周期，则会报错退出。这三条规则同时适用于`fn`声明和`impl`声明。
+ - 规则一：每个引用参数都有它自己的生命周期。即，一个参数的函数可以获取到一个生命周期`fn foo<'a>(x: &'a i32)`，两个参数的函数获取到两个生命周期`fn foo<'a, 'b>(x: &'a i32, y: &'b i32)`。依此类推。
+ - 规则二：如果明确只有一个input lifetime参数，那么output lifetime跟它相同。`fn foo<'a>(x: &'a i32) -> &'a i32`。
+ - 规则三：如果有多个input lifetime参数，但是其中之一是`&self`或者`&mut self`，那么所有output lifetimes都跟`self`的生命周期相同。
+
+我们在编译器的角度看几个函数签名。
+>`fn first_word(s: &str) -> &str {`
+
+首先应用规则一，每个参数都有自己的生命周期。
+>`fn first_word<'a>(s:&'a str) -> &str {`
+
+接着规则二也符合：只有一个参，那么返回值的生命周期也确定了
+>`fn first_word<'a>(s:&'a str) -> &'a str {`
+
+在看另外一个例子：
+>`fn longest(x: &str, y: &str) -> &str {`
+
+首先规则一：
+>`fn longest<'a, 'b>(x: &'a str, y: &'b str) -> &str {`
+
+接下来规则二不适用，因为有两个参数；规则三也不适用，因为它不是一个方法，没有`self`参数。三条规则结束，还没能确定返回值的生命周期，此时编译器报错退出。
+
+### Lifetime Annotations in Method Definitions
+
+当我们实现方法当时候声明其生命周期时，它的定义方式和泛型类型一样。我们在何处定义和使用生命周期参数取决于他们是否和方法的参数或者实例字段以及返回值相关。结构体字段的生命周期名称任何情况下都需要在`impl`关键字后声明和在结构体名称中使用，因为它是结构体声明的一部分。
+
+在方法签名中，引用可能会跟实例字段的生命周期绑定，也可能是独立的。此外，*生命周期省略规则*通常使方法生命中不需要定义生命周期。
+
+通过之前的`ImportantExcerpt`结构体来看一些例子。
+```rust
+impl<'a> ImportantExcerpt<'a> {
+    fn level(&self) -> i32 {
+        3
+    }
+}
+```
+在`impl`后声明生命周期参数，在结构体名称后使用是必须的。但是由于生命周期省略规则一，不需要在方法签名中声明生命周期。
+```rust
+impl<'a> ImportantExcerpt<'a> {
+    fn announce_and_return_part(&self, announcement: &str) -> &str {
+        println!("Attention please: {}", announcement);
+        self.part
+    }
+}
+```
+上面是一个符合生命周期省略规则三的例子。
+
+### The Static Lifetime
+
+一个需要说明的特殊生命周期是`static`，意思是引用在整个程序执行期间都有效。字符串字面量的生命周期都是`static`：
+>`let s: &'static str = "I have a static lifetime.";`
+
+因为字符串字面量是直接写入二进制文件的，程序运行期间一直存在，所以它的生命周期是`static`。
+
+可能在报错时你会看到编译器建议你使用`static`生命周期。但是这些问题可能是由于创建悬空指针或者生命周期不匹配造成的，首先应当解决真正的问题而不是无脑`static`。
+
+
+## Section 4 - Generic Type Parameters, Trait Bounds, and Lifetimes Together
+
+让我们把这三个概念使用在一个函数定义中。
+```rust
+use std::fmt::Display;
+
+fn longest_with_an_announcement<'a, T>(
+    x: &'a str,
+    y: &'a str,
+    ann: T,
+) -> &'a str
+where
+    T: Display,
+{
+    println!("Announcement! {}", ann);
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
+}
+```
+
+
