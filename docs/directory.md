@@ -11,7 +11,7 @@
 - [Chapter 7 - Error Handling](/Rust/07-error-handling.md)
 - [Chapter 8 - Generic Types, Traits, and Lifetimes](/Rust/08-generic-types-traits-and-lifetimes.md)
 - [Chapter 9 - Writing Automated Tests](/Rust/09-write-tests.md)
-- [Chapter 10 - 函数式语言特性：闭包和迭代器](/Rust/10-iterators-and-closures.md)
+- [Chapter 10 - Functional Language Features: Iterators and Closures](/Rust/10-iterators-and-closures.md)
 ## 笔记
 - [html个人笔记](/笔记/html.md)
 ## 随便写写
