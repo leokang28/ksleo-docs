@@ -298,4 +298,62 @@ fn main() {
 
 ## Section 2 - Processing a Series of Items with Iterators
 
+迭代器模式可以让你在一个有序列表上依次执行一些任务。迭代器主要负责序列中每个项目要执行的操作和控制序列的退出。
 
+Rust中迭代器是惰性的。意味着只要你不调用消费迭代器的方法，它就不会执行任何操作。比如这个代码就没有任何实际作用。
+```rust
+let v1 = vec![1, 2, 3];
+
+let v1_iter = v1.iter();
+```
+
+当我们创建迭代器后，有许多方法可以去消费它。
+
+通过`for`循环，在每个元素上执行一些操作。
+```rust
+let v1 = vec![1, 2, 3];
+
+let v1_iter = v1.iter();
+
+for val in v1_iter {
+    println!("Got: {}", val);
+}
+```
+
+迭代器可以让你更灵活的在不同序列上使用相同的逻辑，不光是在数组这样的数据结构上。
+
+### The `Iterator` Trait and the `next` Method
+
+所有的迭代器都实现了标准库提供的`Iterator`trait。它的定义大致是：
+```rust
+
+pub trait Iterator {
+    type Item;
+
+    fn next(&mut self) -> Option<Self::Item>;
+
+    // methods with default implementations elided
+}
+```
+有两个新语法`type Item`和`Self::Item`，它定义了一个trait的关联类型。因此，实现`Iterator`trait需要你定义一个`Item`类型，这个类型会在`next`方法的返回值类型中使用。也就是说，`Item`类型是迭代器的返回类型。
+
+`Iterator`trait只有`next`方法是必须实现的，这个方法一次返回一个迭代器中的元素，用`Some`包裹；当迭代结束时，返回`None`。
+
+可以直接通过迭代器调用`next`方法：
+```rust
+#[test]
+fn iterator_demonstration() {
+    let v1 = vec![1, 2, 3];
+
+    let mut v1_iter = v1.iter();
+
+    assert_eq!(v1_iter.next(), Some(&1));
+    assert_eq!(v1_iter.next(), Some(&2));
+    assert_eq!(v1_iter.next(), Some(&3));
+    assert_eq!(v1_iter.next(), None);
+}
+```
+
+使用`next`方法时，迭代器需要`mut`关键字定义。next方法会改变迭代器中用来追踪目前所迭代的位置状态，也可以说这是一种*消费（consumes）*行为。在`for`循环中，迭代器定义不需要`mut`关键字，因为`for`循环会获取迭代器的所有权，隐式地将其转为mutable的。
+
+`next`方法返回的数据是原序列中元素的不可变引用。`iter`在不可变引用上生成迭代器。如果我们想创建一个拥有原序列所有权的迭代器，可以调用`into_iter`。
