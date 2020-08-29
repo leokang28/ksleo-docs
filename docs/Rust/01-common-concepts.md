@@ -66,24 +66,24 @@ println!("{}", x);
 ## Section 2 - Data Types
 
 ### 整型（Integer）
-Length|Signed|Unsigned
-:-|:-|:-
-8-bit|i8|u8
-16-bit|i16|u16
-32-bit|i32|u32
-64-bit|i64|u64
-128-bit|i128|u128
-arch|isize|usize
+| Length  | Signed | Unsigned |
+| :------ | :----- | :------- |
+| 8-bit   | i8     | u8       |
+| 16-bit  | i16    | u16      |
+| 32-bit  | i32    | u32      |
+| 64-bit  | i64    | u64      |
+| 128-bit | i128   | u128     |
+| arch    | isize  | usize    |
 无符号整型范围：0 ~ $2^n - 1$，有符号整型范围：$-2^{n-1}$ ~ $2^{n-1} - 1$
 
 #### 整型字面量
-Number|literals	Example
-:-|:-
-Decimal|98_222
-Hex|0xff
-Octal|0o77
-Binary|0b1111_0000
-Byte|(u8 only)	b'A'
+| Number  | literals	Example |
+| :------ | :--------------- |
+| Decimal | 98_222           |
+| Hex     | 0xff             |
+| Octal   | 0o77             |
+| Binary  | 0b1111_0000      |
+| Byte    | (u8 only)	b'A'   |
 
 :::tip 溢出（Integer Overflow）
 当发生整型溢出，debug模式程序会报错退出，release编译模式会将高位截断（`u8`256 -> 0）。
@@ -129,7 +129,7 @@ let x = [1, 2, 3];
 // 指定类型和数量
 let x:[i32; 3] = [1, 2, 3];
 // 所有元素都是相同的
-let x:[3; 5]
+let x = [3; 5];
 ```
 
 #### 数组访问
