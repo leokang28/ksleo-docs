@@ -322,7 +322,7 @@ for val in v1_iter {
 
 迭代器可以让你更灵活的在不同序列上使用相同的逻辑，不光是在数组这样的数据结构上。
 
-### The `Iterator` Trait and the `next` Method
+### `Iterator`Trait和`next` 方法
 
 所有的迭代器都实现了标准库提供的`Iterator`trait。它的定义大致是：
 ```rust
@@ -356,4 +356,161 @@ fn iterator_demonstration() {
 
 使用`next`方法时，迭代器需要`mut`关键字定义。next方法会改变迭代器中用来追踪目前所迭代的位置状态，也可以说这是一种*消费（consumes）*行为。在`for`循环中，迭代器定义不需要`mut`关键字，因为`for`循环会获取迭代器的所有权，隐式地将其转为mutable的。
 
-`next`方法返回的数据是原序列中元素的不可变引用。`iter`在不可变引用上生成迭代器。如果我们想创建一个拥有原序列所有权的迭代器，可以调用`into_iter`。
+`next`方法返回的数据是原序列中元素的不可变引用。`iter`在不可变引用上生成迭代器。如果我们想创建一个拥有原序列所有权的迭代器，可以调用`into_iter`。如果想创建一个迭代器的可变引用，可以调用`iter_mut`。
+
+### 消费迭代器的方法
+
+标准库默认为`Iterator`trait提供了许多方法。有些方法内部会调用`next`方法，因此在实现`Iterator`trait时，必须实现`next`方法。
+
+调用`next`方法的那些方法称为*消费型适配器（consuming adaptors）*，因为它们在消耗迭代器。例如`sum`方法：
+```rust
+#[test]
+fn iterator_sum() {
+    let v1 = vec![1, 2, 3];
+
+    let v1_iter = v1.iter();
+
+    let total: i32 = v1_iter.sum();
+
+    assert_eq!(total, 6);
+}
+```
+
+### 产生新迭代器的方法
+
+还有一些`Iterator`trait上定义方法，称之为*迭代器适配器（iterator adaptors）*，这些方法可以把迭代器转换成其他类型的迭代器。迭代器适配器可以链式调用，这样可以提高一组复杂操作的可读性。由于迭代器是惰性的，因此你最终需要调用消费适配器，这一组操作才会真正起作用。
+```rust
+let v1: Vec<i32> = vec![1, 2, 3];
+
+v1.iter().map(|x| x + 1);
+```
+上面的代码编译器会给出一个警告：`iterators are lazy and do nothing unless consumed`。也就是说这个代码不会起任何作用，定义的闭包也根本没有被执行。我们可以通过调用消费适配器，比如`collect`方法来解决这个问题。
+```rust
+let v1: Vec<i32> = vec![1, 2, 3];
+
+let v2: Vec<_> = v1.iter().map(|x| x + 1).collect();
+
+assert_eq!(v2, vec![2, 3, 4]);
+```
+
+### 使用闭包捕获上下文
+
+下面通过使用`filter`迭代适配器来演示一个闭包捕获上下文的基本用法。`filter`方法接收一个闭包，这个闭包的参数是迭代器中的元素，返回值是一个布尔值。如果闭包返回`true`，则该元素会被包含在`filter`方法返回的迭代器中，反之亦然。
+```rust
+#[derive(PartialEq, Debug)]
+struct Shoe {
+    size: u32,
+    style: String,
+}
+
+fn shoes_in_my_size(shoes: Vec<Shoe>, shoe_size: u32) -> Vec<Shoe> {
+    shoes.into_iter().filter(|s| s.size == shoe_size).collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn filters_by_size() {
+        let shoes = vec![
+            Shoe {
+                size: 10,
+                style: String::from("sneaker"),
+            },
+            Shoe {
+                size: 13,
+                style: String::from("sandal"),
+            },
+            Shoe {
+                size: 10,
+                style: String::from("boot"),
+            },
+        ];
+
+        let in_my_size = shoes_in_my_size(shoes, 10);
+
+        assert_eq!(
+            in_my_size,
+            vec![
+                Shoe {
+                    size: 10,
+                    style: String::from("sneaker")
+                },
+                Shoe {
+                    size: 10,
+                    style: String::from("boot")
+                },
+            ]
+        );
+    }
+}
+
+fn main() {}
+```
+
+### 使用`Iterator`trait实现自定义迭代器
+
+之前的例子中，可以通过调用Vec类型上的`iter`，`iter_mut`，`into_iter`来生成一个迭代器。你也可以为标准库中的其他类型来创建迭代器，例如哈希表。也可以在你自己的类型上，实现`Iterator`trait，从而实现任何你想要的功能。唯一必须要被实现的方法是`next`方法，当你实现`next`方法后，就可以调用其他`Iterator`trait实现的默认方法。
+
+实现一个从1累加到5的迭代器来演示一下。
+```rust
+struct Counter {
+    count: u32,
+}
+
+impl Counter {
+    fn new() -> Counter {
+        Counter { count: 0 }
+    }
+}
+
+impl Iterator for Counter {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.count < 5 {
+            self.count += 1;
+            Some(self.count)
+        } else {
+            None
+        }
+    }
+}
+
+#[test]
+fn calling_next_directly() {
+    let mut counter = Counter::new();
+
+    assert_eq!(counter.next(), Some(1));
+    assert_eq!(counter.next(), Some(2));
+    assert_eq!(counter.next(), Some(3));
+    assert_eq!(counter.next(), Some(4));
+    assert_eq!(counter.next(), Some(5));
+    assert_eq!(counter.next(), None);
+}
+
+fn main() {}
+```
+
+#### 使用`Iterator`trait的其他方法
+
+我们实现`Iterator`trait，也定义了`next`方法，因此我们可以调用`Iterator`trait上，由标准库默认实现的任意方法，因为它们使用的都是`next`方法的功能。
+```rust
+#[test]
+fn using_other_iterator_trait_methods() {
+    let sum: u32 = Counter::new()
+        .zip(Counter::new().skip(1))
+        .map(|(a, b)| a * b)
+        .filter(|x| x % 3 == 0)
+        .sum();
+    assert_eq!(18, sum);
+}
+```
+
+上面的代码将两个Counter迭代器组合为元组数组，并且第二个Counter的第一个元素被跳过，因此最后一组元组是`(5, None)`。`zip`方法不会返回元组中带有`None`的元素。
+
+## Section 3 - 循环和迭代器的性能对比
+
+
+
