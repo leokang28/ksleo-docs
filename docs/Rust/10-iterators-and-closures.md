@@ -510,7 +510,3 @@ fn using_other_iterator_trait_methods() {
 
 上面的代码将两个Counter迭代器组合为元组数组，并且第二个Counter的第一个元素被跳过，因此最后一组元组是`(5, None)`。`zip`方法不会返回元组中带有`None`的元素。
 
-## Section 3 - 循环和迭代器的性能对比
-
-
-
