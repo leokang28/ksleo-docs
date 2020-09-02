@@ -2,7 +2,7 @@
 
 当项目体积越来越大，良好的代码组织就变得很重要。因为只靠脑子记忆整个项目的代码逻辑是不可能的。
 
-目前为止所写的一些示例程序都是一个模块一个文件下的。当项目体积增长，就可以将代码分割到不同模块不同文件中。一个*package（包）*可以包含多个二进制crate，并且可以选择性的包含一个库crate。当包体积变大，可以通过提取代码成一个独立的crate，将它转变为一个外部依赖。本章会涵盖所有这些技术。
+目前为止所写的一些示例程序都是一个模块一个文件下的。当项目体积增长，就可以将代码分割到不同模块不同文件中。一个*package（包）*可以包含多个可执行crate，并且可以选择性的包含一个库crate。当包体积变大，可以通过提取代码成一个独立的crate，将它转变为一个外部依赖。本章会涵盖所有这些技术。
 
 除了分组功能，封装逻辑实现代码可以让代码复用：当你封装了一个操作，其他地方的代码可以通过接口直接使用这个功能，而不需要知道内部具体是如何实现的。封装代码哪部分是公用接口，哪部分是私有属性，这取决于封装实现的编码人员。
 
@@ -10,7 +10,7 @@
 
 Rust模块系统包括：
  - **Packages**：是Cargo的一个功能，可以用来创建、测试和发布crate。
- - **Crates**：一个导出二进制文件或者可执行文件的模块树。
+ - **Crates**：一个导出可执行文件或者可执行文件的模块树。
  - **Modules**和**use**：用来控制*Paths*的组织、域和隐私。
  - **Paths**：命名实体的方式，例如给函数、结构体和模块命名。
 
@@ -18,9 +18,9 @@ Rust模块系统包括：
 
 ## Section 1 - Packages and Crates
 
-*crate*是一个二进制文件或者库。*crate root*是编译器开始编译并把你的crate打包成根模块的源文件。*package*是由一个或者多个提供了某些功能的crate组成的。一个package有一个描述如何构建这些crate的*Cargo.toml*文件。
+*crate*是一个可执行文件或者库。*crate root*是编译器开始编译并把你的crate打包成根模块的源文件。*package*是由一个或者多个提供了某些功能的crate组成的。一个package有一个描述如何构建这些crate的*Cargo.toml*文件。
 
-一个package最多包含一个库crate，可以包含任意数量的二进制crate。但是至少要包含一个crate。
+一个package最多包含一个库crate，可以包含任意数量的可执行crate。但是至少要包含一个crate。
 
 看一下使用`cargo new`创建新的package时发生了什么。
 
@@ -33,9 +33,9 @@ Rust模块系统包括：
     main.rs
 
 
-cargo生成一个package，创建了一个*cargo.toml*文件。看一下cargo.toml文件的内容，里面没有关于*src/main.rs*的信息，因为Rust遵循一个规定，*src/main.rs*文件是与package同名的二进制crate的入口文件。如果package下有一个*src/lib.rs*文件，则它是与package同名的库crate的入口文件。cargo将入口文件传给`rustc`构建库或者二进制文件。
+cargo生成一个package，创建了一个*cargo.toml*文件。看一下cargo.toml文件的内容，里面没有关于*src/main.rs*的信息，因为Rust遵循一个规定，*src/main.rs*文件是与package同名的可执行crate的入口文件。如果package下有一个*src/lib.rs*文件，则它是与package同名的库crate的入口文件。cargo将入口文件传给`rustc`构建库或者可执行文件。
 
-我们刚生成的项目中，只有一个src/main.rs文件，意味着这个项目只有一个二进制crate。如果package中同时具有*src/main.rs*和*src/lib.rs*文件，则说明这个package有一个二进制crate和一个库crate，且都与package同名。如果package具有多个二进制crate，则对应的文件需要存放在*src/bin*目录下，每个文件都是一个独立的二进制crate。
+我们刚生成的项目中，只有一个src/main.rs文件，意味着这个项目只有一个可执行crate。如果package中同时具有*src/main.rs*和*src/lib.rs*文件，则说明这个package有一个可执行crate和一个库crate，且都与package同名。如果package具有多个可执行crate，则对应的文件需要存放在*src/bin*目录下，每个文件都是一个独立的可执行crate。
 
 一个crate最好将一些相关功能组织到一个scope里面，方便在项目之间复用。
 
