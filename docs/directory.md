@@ -13,6 +13,7 @@
 - [Chapter 9 - Writing Automated Tests](/Rust/09-write-tests.md)
 - [Chapter 10 - Functional Language Features: Iterators and Closures](/Rust/10-iterators-and-closures.md)
 - [Chapter 11 - 关于Cargo和Crates.io](/Rust/11-cargo-and-crates.io.md)
+- [Chapater 12 - Smart Pointers](/Rust/12-smart-pointer.md)
 ## 笔记
 - [html个人笔记](/笔记/html.md)
 ## 随便写写

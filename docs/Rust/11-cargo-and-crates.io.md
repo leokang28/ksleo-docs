@@ -359,4 +359,8 @@ mod tests {
 
 `cargo install`命令可以让你在本地下载和使用可执行crate。只能安装带有可执行编译目标的包。可执行编译目标是由具有*src/main.rs*文件，或者其他被指定为可执行文件的包，编译而来的可执行程序。相对应的库crate则不能独立运行，只能被其他crate引用。通常crate都会又README文件说明，crate是可执行crate还是库crate。
 
-可执行文件被下载到安装目录的*bin*目录下，如果你没有进行过任何自定义配置，这个目录是*$HOME/.cargo/bin*。
+可执行文件被下载到安装目录的*bin*目录下，如果你没有进行过任何自定义配置，这个目录是\$HOME/.cargo/bin。确保该路径被添加进`$PATH`环境变量了，否则可能无法运行可执行文件。
+
+## Section 5 - 子命令扩展Cargo
+
+Cargo被设计为你不需要修改Cargo本身就可以扩展很多子命令，如果你的`$PATH`中有个可执行程序叫`cargo-something`，你可以用类似子命令的方式运行它`cargo something`。可以通过`cargo --list`命令列出所有cargo扩展命令。使用`cargo install`来安装这些可执行扩展，就像使用内置工具一样方便。
