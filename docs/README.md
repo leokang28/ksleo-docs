@@ -1,9 +1,8 @@
 ---
 home: true
 heroImage: /logo.jpg
-heroText: 嘻嘻嘻
-tagline: 嘿嘿嘿
-actionText: →
+tagline: 努力有一天能为Rust贡献开源的前端开发
+actionText: 📒
 actionLink: /directory/
 features:
   - title: 球迷

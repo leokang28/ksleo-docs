@@ -34,7 +34,7 @@ fs.readdir(DIRECTORY_ROOT, (err, data) => {
   // writeStream.write(`## ${}`)
   // })
   for (const item of map) {
-    writeStream.write(`## ${item[0]}\n`)
+    writeStream.write(`## ${item[0].replace('-', ' ')}\n`)
     // writeStream.write(`
     // - [${}]
     // `)
