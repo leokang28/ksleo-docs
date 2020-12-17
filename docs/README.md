@@ -1,7 +1,7 @@
 ---
 home: true
 heroImage: /logo.jpg
-tagline: 努力有一天能为Rust贡献开源的前端开发
+tagline: frontend & rustacean
 actionText: 📒
 actionLink: /directory/
 features:
