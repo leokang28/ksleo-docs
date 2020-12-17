@@ -4,7 +4,7 @@
   "description": "my kinds of docs",
   "main": "index.js",
   "scripts": {
-    "docs:dev": "npx vuepress dev docs",
+    "docs:dev": "npm run gd && npx vuepress dev docs",
     "docs:build": "npm run gd && npx vuepress build docs && sh ./deploy.sh",
     "gd": "node ./utils/genDirectory.js"
   },
