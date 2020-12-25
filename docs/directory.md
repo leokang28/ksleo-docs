@@ -12,7 +12,7 @@
 - [Chapter 11 - 关于Cargo和Crates.io](/Rust-Book/11-cargo-and-crates.io.md)
 - [Chapater 12 - Smart Pointers](/Rust-Book/12-smart-pointer.md)
 ## fe
-- [Redux源码解析](/fe/redux源码解析.md)
+- [Redux源码阅读笔记](/fe/redux.md)
 ## node
 - [Array 上的方法](/node/array.md)
 - [Nodejs setTimeout(fn, 0) 和 setImmediate 哪个先执行以及延伸思考](/node/eventloop.md)
