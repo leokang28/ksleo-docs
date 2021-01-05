@@ -27,5 +27,6 @@
 - [滑动窗口](/数据结构与算法/slide-window.md)
 ## 笔记
 - [html个人笔记](/笔记/html.md)
-## 随便写写
-- [tcp/ip详解卷一 第一章习题](/随便写写/tcpc1.md)
+## 计算机网络
+- [网络层](/计算机网络/network-layer.md)
+- [tcp/ip详解卷一 第一章习题](/计算机网络/tcpc1.md)
